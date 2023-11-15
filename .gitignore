@@ -1,5 +1,10 @@
 build/
 *.DS_Store
-edge-impulse-sdk/
-model-parameters/
-tflite-model/
+managed_components
+.vscode
+docs/
+dependencies.lock
+Doxyfile
+Doxyfile.bak
+sdkconfig
+sdkconfig.old

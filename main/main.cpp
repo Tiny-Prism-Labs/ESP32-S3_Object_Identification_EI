@@ -1,36 +1,61 @@
-/* Edge Impulse Espressif ESP32 Standalone Inference ESP IDF Example
- * Copyright (c) 2022 EdgeImpulse Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+/**
+ * @mainpage 
+ * @file main.cpp
+ * @author Errol Joshua (errol@tinyprismlabs.com)
+ * @brief File contains all main initializations for the operations and as well as control of different operation required to run the program
+ * @version 0.1
+ * @date 2023-11-15
+ * 
+ * @copyright Copyright (c) 2023 Tiny Prism Labs Private Limited <contact@tinyprismlabs.com>
+ * 
  */
-
-/* Include ----------------------------------------------------------------- */
 #include <stdio.h>
+#include <string.h>
 #include "sdkconfig.h"
 #include "classifier.cpp"
+#include "freertos/FreeRTOS.h"
+#include "esp_err.h"
+#include "esp_log.h"
 #include "camera.cpp"
 
-extern "C" void app_main()
+uint8_t *snapshot_buf;
+TaskHandle_t cameraTaskHandler;
+
+/**
+ * @brief This funtion call attached to ```cameraTaskHandler```
+ * 
+ * This is initialize the camera module, capture a image and then call classify function to run ML inference. This is created using xTaskCreatePinnedToCore
+ * and is pinned to core 0 of ESP32-S3. Please refer https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/api-reference/system/freertos_idf.html for more info.
+ * 
+ * @param args empty parameter
+ */
+void xCamera(void *args)
 {
-    camera_init();
-    camera_capture();
-    classify();
-    // control action
+
+    if (ESP_OK != init_camera())
+    {
+        return;
+    }
+
+    while (1)
+    {
+        snapshot_buf = (uint8_t *)malloc(EI_CAMERA_RAW_FRAME_BUFFER_COLS * EI_CAMERA_RAW_FRAME_BUFFER_ROWS * EI_CAMERA_FRAME_BYTE_SIZE);
+        take_picture(snapshot_buf);
+        classify(snapshot_buf);
+
+        vTaskDelay(5000 / portTICK_RATE_MS);
+    }
 }
 
+
+/**
+ * @brief Main funtion
+ * 
+ * This main fn is accompanied by extern as ESP32-S3 toolchain takes only c files
+ * 
+ */
+extern "C" void app_main()
+{
+    xTaskCreatePinnedToCore(xCamera, "camera_classify", 2048 * 2, NULL, 10, cameraTaskHandler, 0); 
+
+}
