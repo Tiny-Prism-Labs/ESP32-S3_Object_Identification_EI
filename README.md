@@ -1,6 +1,6 @@
 # Object Detection using XIAO ESP32S3 Sense 
 
-This repository runs an [Retail Image Classification](https://github.com/edgeimpulse/expert-projects/blob/main/image-projects/retail-image-classification-nvidia-jetson-nano.md) by [Adam Milton-Barker](https://www.adammiltonbarker.com) on XIAO ESP32S3 Sense. The original EI project was built for Jetson Nano but we ported the it to XIAO ESP32S3 Sense.
+This repository runs EI project, [Retail Image Classification](https://github.com/edgeimpulse/expert-projects/blob/main/image-projects/retail-image-classification-nvidia-jetson-nano.md) by [Adam Milton-Barker](https://www.adammiltonbarker.com) on XIAO ESP32S3 Sense. The original EI project was built for Jetson Nano but we ported the it to XIAO ESP32S3 Sense.
 
 # Goal and Objectives
 
